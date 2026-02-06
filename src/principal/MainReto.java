@@ -77,18 +77,25 @@ public class MainReto {
 	}
 
 	private static void listarGruposDetallado() {
-		File fichero = new File("grupos.obj");
+
+	    File fichero = new File("grupos.obj");
 
 	    if (!fichero.exists()) {
 	        System.out.println("No hay grupos registrados.");
 	        return;
 	    }
 
-	    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero))) {
+	    ArrayList<Grupo> listaGrupos = new ArrayList<>();
 
-	        Grupo[] grupos = (Grupo[]) ois.readObject();
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(
+	                new FileInputStream(fichero));
 
-	        if (grupos.length == 0) {
+	        listaGrupos = (ArrayList<Grupo>) ois.readObject();
+	        ois.close();
+
+	        if (listaGrupos.isEmpty()) {
 	            System.out.println("No hay grupos para mostrar.");
 	            return;
 	        }
@@ -96,8 +103,10 @@ public class MainReto {
 	        System.out.println("LISTADO DETALLADO DE GRUPOS");
 	        System.out.println("-------------------------------");
 
-	        for (Grupo g : grupos) {
-	            System.out.println("Grupo: " + g.getCodGrup() + " - " + g.getNombGrupo());
+	        for (Grupo g : listaGrupos) {
+
+	            System.out.println("Grupo: " + g.getCodGrup()
+	                    + " - " + g.getNombGrupo());
 
 	            if (g.getPersonas().isEmpty()) {
 	                System.out.println("  (Sin personas)");
@@ -108,20 +117,24 @@ public class MainReto {
 	                    if (p instanceof Cantante) {
 	                        Cantante c = (Cantante) p;
 	                        System.out.println("  Cantante:");
-	                        System.out.println("  	Nombre: " + c.getNombre() + " " + c.getApellido());
-	                        System.out.println("  	DNI: " + c.getDni());
-	                        System.out.println("  	Email: " + c.getEmail());
-	                        System.out.println("  	Género: " + c.getGenero());
+	                        System.out.println("    Nombre: "
+	                                + c.getNombre() + " " + c.getApellido());
+	                        System.out.println("    DNI: " + c.getDni());
+	                        System.out.println("    Email: " + c.getEmail());
+	                        System.out.println("    Género: " + c.getGenero());
 
 	                    } else if (p instanceof Staff) {
 	                        Staff s = (Staff) p;
 	                        System.out.println("  Staff:");
-	                        System.out.println("  	Nombre: " + s.getNombre() + " " + s.getApellido());
-	                        System.out.println("  	DNI: " + s.getDni());
-	                        System.out.println("  	Email: " + s.getEmail());
-	                        System.out.println("  	Tipo: " + s.getTipo());
-	                        System.out.println("  	Fecha inicio: " + s.getFechaInicioPuesto());
-	                        System.out.println("  	Años en el puesto: " + s.calcularAniosPuesto());
+	                        System.out.println("    Nombre: "
+	                                + s.getNombre() + " " + s.getApellido());
+	                        System.out.println("    DNI: " + s.getDni());
+	                        System.out.println("    Email: " + s.getEmail());
+	                        System.out.println("    Tipo: " + s.getTipo());
+	                        System.out.println("    Fecha inicio: "
+	                                + s.getFechaInicioPuesto());
+	                        System.out.println("    Años en el puesto: "
+	                                + s.calcularAniosPuesto());
 	                    }
 	                }
 	            }
@@ -133,8 +146,8 @@ public class MainReto {
 	        System.out.println("Error al leer los grupos.");
 	        e.printStackTrace();
 	    }
-		
 	}
+
 
 	private static void modificarInformacion() {
 	    int opc;
@@ -170,18 +183,25 @@ public class MainReto {
 	        return;
 	    }
 
+	    ArrayList<Grupo> listaGrupos = new ArrayList<>();
+
 	    try {
-	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero));
-	        Grupo[] grupos = (Grupo[]) ois.readObject();
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(
+	                new FileInputStream(fichero));
+
+	        listaGrupos = (ArrayList<Grupo>) ois.readObject();
 	        ois.close();
 
-	        String dni = Utilidades.introducirCadena("Introduce DNI del staff:");
+	        String dni = Utilidades.introducirCadena(
+	                "Introduce DNI del staff:");
 
 	        Staff staff = null;
 
-	        for (Grupo g : grupos) {
-	            if (g.getPersonas().containsKey(dni) &&
-	                g.getPersonas().get(dni) instanceof Staff) {
+	        // ---------- BUSCAR STAFF ----------
+	        for (Grupo g : listaGrupos) {
+	            if (g.getPersonas().containsKey(dni)
+	                    && g.getPersonas().get(dni) instanceof Staff) {
 
 	                staff = (Staff) g.getPersonas().get(dni);
 	                break;
@@ -193,21 +213,22 @@ public class MainReto {
 	            return;
 	        }
 
+	        // ---------- MOSTRAR DATOS ----------
 	        System.out.println("Datos actuales:");
 	        System.out.println("Nombre: " + staff.getNombre());
 	        System.out.println("Tipo: " + staff.getTipo());
 
-	        // Modificar nombre
+	        // ---------- MODIFICAR ----------
 	        String nuevoNombre = Utilidades.introducirCadena("Nuevo nombre:");
 	        staff.setNombre(nuevoNombre);
 
-	        // Modificar tipo
 	        Tipo nuevoTipo = null;
 	        boolean valido = false;
 
 	        do {
 	            try {
-	                String tipoStr = Utilidades.introducirCadena("Nuevo tipo (MANAGER / TECNICO / MEDICO):");
+	                String tipoStr = Utilidades.introducirCadena(
+	                        "Nuevo tipo (MANAGER / TECNICO / MEDICO):");
 	                nuevoTipo = Tipo.valueOf(tipoStr.toUpperCase());
 	                valido = true;
 	            } catch (IllegalArgumentException e) {
@@ -217,9 +238,11 @@ public class MainReto {
 
 	        staff.setTipo(nuevoTipo);
 
-	        // Guardar cambios
-	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fichero));
-	        oos.writeObject(grupos);
+	        // ---------- GUARDAR CAMBIOS ----------
+	        ObjectOutputStream oos = new ObjectOutputStream(
+	                new FileOutputStream(fichero));
+
+	        oos.writeObject(listaGrupos);
 	        oos.close();
 
 	        System.out.println("Staff modificado correctamente.");
@@ -240,18 +263,24 @@ public class MainReto {
 	        return;
 	    }
 
+	    ArrayList<Grupo> listaGrupos = new ArrayList<>();
+
 	    try {
-	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero));
-	        Grupo[] grupos = (Grupo[]) ois.readObject();
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(
+	                new FileInputStream(fichero));
+
+	        listaGrupos = (ArrayList<Grupo>) ois.readObject();
 	        ois.close();
 
-	        String dni = Utilidades.introducirCadena("Introduce DNI del cantante:");
+	        String dni = Utilidades.introducirCadena(
+	                "Introduce DNI del cantante:");
 
 	        Cantante cantante = null;
 	        Grupo grupoCantante = null;
 
-	        // Buscar cantante
-	        for (Grupo g : grupos) {
+	        // ---------- BUSCAR CANTANTE ----------
+	        for (Grupo g : listaGrupos) {
 	            if (g.getPersonas().containsKey(dni) &&
 	                g.getPersonas().get(dni) instanceof Cantante) {
 
@@ -266,6 +295,7 @@ public class MainReto {
 	            return;
 	        }
 
+	        // ---------- MOSTRAR DATOS ----------
 	        System.out.println("Datos actuales:");
 	        System.out.println("Nombre: " + cantante.getNombre());
 	        System.out.println("Género: " + cantante.getGenero());
@@ -296,7 +326,8 @@ public class MainReto {
 
 	        do {
 	            try {
-	                String gen = Utilidades.introducirCadena("Nuevo género (POP / ROCK / REGGAETON):");
+	                String gen = Utilidades.introducirCadena(
+	                        "Nuevo género (POP / ROCK / REGGAETON):");
 	                nuevoGenero = Genero.valueOf(gen.toUpperCase());
 	                valido = true;
 	            } catch (IllegalArgumentException e) {
@@ -306,9 +337,10 @@ public class MainReto {
 
 	        cantante.setGenero(nuevoGenero);
 
-	        // Guardar cambios
-	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fichero));
-	        oos.writeObject(grupos);
+	        // ---------- GUARDAR CAMBIOS ----------
+	        ObjectOutputStream oos = new ObjectOutputStream(
+	                new FileOutputStream(fichero));
+	        oos.writeObject(listaGrupos);
 	        oos.close();
 
 	        System.out.println("Cantante modificado correctamente.");
@@ -319,222 +351,254 @@ public class MainReto {
 	    }
 	}
 
+
 	private static void consultarStaffPorDni() {
-		File ficheroGrupos = new File("grupos.obj");
-		if (!ficheroGrupos.exists()) {
-			System.out.println("No hay grupos registrados.");
-			return;
-		}
 
-		String dniBuscado = Utilidades.introducirCadena("Introducir dni del Staff: ");
+	    File ficheroGrupos = new File("grupos.obj");
+	    if (!ficheroGrupos.exists()) {
+	        System.out.println("No hay grupos registrados.");
+	        return;
+	    }
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroGrupos))) {
-			Grupo[] grupos = (Grupo[]) ois.readObject();
+	    String dniBuscado = Utilidades.introducirCadena("Introducir DNI del Staff: ");
 
-			boolean encontrado = false;
+	    ArrayList<Grupo> listaGrupos = new ArrayList<>();
 
-			for (Grupo g : grupos) {
-				for (Persona p : g.getPersonas().values()) {// devuelve personas staff y cantantes.
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroGrupos));
+	        listaGrupos = (ArrayList<Grupo>) ois.readObject();
+	        ois.close();
 
-					if (p instanceof Staff && p.getDni().equals(dniBuscado)) {
-						Staff s = (Staff) p;
-						System.out.println("STAFF ENCONTRADO");
-						System.out.println("----------------");
-						System.out.println("Grupo: " + g.getNombGrupo());
-						System.out.println("Puesto: " + s.getTipo());
-						System.out.println("Años en el puesto: " + s.calcularAniosPuesto());
-						encontrado = true;
-					}
-				}
-			}
-			if (!encontrado) {
-				System.out.println("No existe ningún staff con ese DNI.");
-			}
-		} catch (Exception e) {
-			System.out.println("Error al buscar el staff.");
-		}
+	        boolean encontrado = false;
 
+	        // ---------- RECORRER GRUPOS Y PERSONAS ----------
+	        for (Grupo g : listaGrupos) {
+	            for (Persona p : g.getPersonas().values()) { // devuelve staff y cantantes
+
+	                if (p instanceof Staff && p.getDni().equals(dniBuscado)) {
+	                    Staff s = (Staff) p;
+	                    System.out.println("STAFF ENCONTRADO");
+	                    System.out.println("----------------");
+	                    System.out.println("Grupo: " + g.getNombGrupo());
+	                    System.out.println("Puesto: " + s.getTipo());
+	                    System.out.println("Años en el puesto: " + s.calcularAniosPuesto());
+	                    encontrado = true;
+	                }
+	            }
+	        }
+
+	        if (!encontrado) {
+	            System.out.println("No existe ningún staff con ese DNI.");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error al buscar el staff.");
+	        e.printStackTrace();
+	    }
 	}
 
-		private static void eliminarFestival() {
-		    File fichero = new File("festival.obj");
 
-		    if (!fichero.exists()) {
-		        System.out.println("No hay festivales registrados.");
-		        return;
-		    }
+	private static void eliminarFestival() {
 
-		    try {
-		        // Leer festivales del fichero
-		        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero));
-		        Festival[] festivalesArray = (Festival[]) ois.readObject();
-		        ois.close();
+	    File fichero = new File("festival.obj");
 
-		        ArrayList<Festival> listaFestivales = new ArrayList<>(Arrays.asList(festivalesArray));
+	    if (!fichero.exists()) {
+	        System.out.println("No hay festivales registrados.");
+	        return;
+	    }
 
-		        // Pedir código del festival
-		        String codFestival = Utilidades.introducirCadena("Introduce el código del festival a eliminar:");
+	    ArrayList<Festival> listaFestivales = new ArrayList<>();
 
-		        boolean eliminado = false;
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(
+	                new FileInputStream(fichero));
 
-		        for (int i = 0; i < listaFestivales.size(); i++) {
-		            if (listaFestivales.get(i).getCodFestival().equalsIgnoreCase(codFestival)) {
-		                listaFestivales.remove(i);
-		                eliminado = true;
-		                break;
-		            }
-		        }
+	        listaFestivales = (ArrayList<Festival>) ois.readObject();
+	        ois.close();
 
-		        if (eliminado) {
-		            // Guardar de nuevo en el fichero
-		            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fichero));
-		            oos.writeObject(listaFestivales.toArray(new Festival[0]));
-		            oos.close();
+	        if (listaFestivales.isEmpty()) {
+	            System.out.println("No hay festivales registrados.");
+	            return;
+	        }
 
-		            System.out.println("Festival eliminado correctamente.");
-		        } else {
-		            System.out.println("Error: el festival no existe.");
-		        }
+	        // ---------- PEDIR CÓDIGO ----------
+	        String codFestival = Utilidades.introducirCadena(
+	                "Introduce el código del festival a eliminar:");
 
-		    } catch (Exception e) {
-		        System.out.println("Error al eliminar el festival.");
-		        e.printStackTrace();
-		    }
+	        boolean eliminado = false;
+
+	        // ---------- ELIMINAR ----------
+	        for (int i = 0; i < listaFestivales.size(); i++) {
+	            if (listaFestivales.get(i).getCodFestival()
+	                    .equalsIgnoreCase(codFestival)) {
+
+	                listaFestivales.remove(i);
+	                eliminado = true;
+	                break;
+	            }
+	        }
+
+	        // ---------- GUARDAR DE NUEVO ----------
+	        if (eliminado) {
+	            ObjectOutputStream oos = new ObjectOutputStream(
+	                    new FileOutputStream(fichero));
+
+	            oos.writeObject(listaFestivales);
+	            oos.close();
+
+	            System.out.println("Festival eliminado correctamente.");
+	        } else {
+	            System.out.println("Error: el festival no existe.");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error al eliminar el festival.");
+	        e.printStackTrace();
+	    }
 	}
 
-		private static void listarConciertosPorFecha() {
 
-		    File fichFesti = new File("festival.obj");
+	private static void listarConciertosPorFecha() {
 
-		    if (!fichFesti.exists()) {
-		        System.out.println("No hay conciertos registrados.");
-		        return;
-		    }
+	    File fichFesti = new File("festival.obj");
 
-		    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichFesti))) {
+	    if (!fichFesti.exists()) {
+	        System.out.println("No hay conciertos registrados.");
+	        return;
+	    }
 
-		        Festival[] festivales = (Festival[]) ois.readObject();
+	    ArrayList<Festival> listaFestivales = new ArrayList<>();
 
-		        if (festivales.length == 0) {
-		            System.out.println("No hay conciertos para mostrar.");
-		            return;
-		        }
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichFesti));
+	        listaFestivales = (ArrayList<Festival>) ois.readObject();
+	        ois.close();
 
-		        // TreeMap para ordenar conciertos por fecha
-		        TreeMap<LocalDate, Concierto> conciertosOrdenados = new TreeMap<>();
+	        if (listaFestivales.isEmpty()) {
+	            System.out.println("No hay conciertos para mostrar.");
+	            return;
+	        }
 
-		        // Recorrer festivales y agregar todos los conciertos al TreeMap
-		        for (Festival f : festivales) {
-		            for (LocalDate fecha : f.getConciertos().keySet()) {
-		                conciertosOrdenados.put(fecha, f.getConciertos().get(fecha));
-		            }
-		        }
+	        // ---------- ORDENAR CONCIERTOS POR FECHA ----------
+	        TreeMap<LocalDate, Concierto> conciertosOrdenados = new TreeMap<>();
 
-		        if (conciertosOrdenados.isEmpty()) {
-		            System.out.println("No hay conciertos registrados.");
-		            return;
-		        }
+	        for (Festival f : listaFestivales) {
+	            for (LocalDate fecha : f.getConciertos().keySet()) {
+	                conciertosOrdenados.put(fecha, f.getConciertos().get(fecha));
+	            }
+	        }
 
-		        System.out.println("LISTADO DE CONCIERTOS ORDENADOS POR FECHA");
-		        System.out.println("---------------------------------------");
+	        if (conciertosOrdenados.isEmpty()) {
+	            System.out.println("No hay conciertos registrados.");
+	            return;
+	        }
 
-		        // Mostrar solo los conciertos: fecha, código y los dos grupos
-		        for (LocalDate fecha : conciertosOrdenados.keySet()) {
-		            Concierto c = conciertosOrdenados.get(fecha);
-		            System.out.println("Fecha: " + fecha);
-		            System.out.println("Grupo 1: " + c.getGrupoPrincipal().getNombGrupo());
-		            System.out.println("Grupo 2: " + c.getGrupoInvitado().getNombGrupo());
-		            System.out.println("---------------------------------------");
-		        }
+	        // ---------- MOSTRAR ----------
+	        System.out.println("LISTADO DE CONCIERTOS ORDENADOS POR FECHA");
+	        System.out.println("---------------------------------------");
 
-		    } catch (Exception e) {
-		        System.out.println("Error al listar los conciertos.");
-		        e.printStackTrace();
-		    }
-		}
+	        for (LocalDate fecha : conciertosOrdenados.keySet()) {
+	            Concierto c = conciertosOrdenados.get(fecha);
+	            System.out.println("Fecha: " + fecha);
+	            System.out.println("Grupo 1: " + c.getGrupoPrincipal().getNombGrupo());
+	            System.out.println("Grupo 2: " + c.getGrupoInvitado().getNombGrupo());
+	            System.out.println("---------------------------------------");
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("Error al listar los conciertos.");
+	        e.printStackTrace();
+	    }
+	}
 
 
 	private static void listarFestivalesPorNombre() {
-		File ficheroGrupos = new File("festival.obj");
 
-		if (!ficheroGrupos.exists()) {
-			System.out.println("No hay grupos registrados.");
-			return;
-		}
+	    File ficheroFestivales = new File("festival.obj");
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroGrupos))) {
-			Festival[] gruposArray = (Festival[]) ois.readObject();
+	    if (!ficheroFestivales.exists()) {
+	        System.out.println("No hay festivales registrados.");
+	        return;
+	    }
 
-			if (gruposArray.length == 0) {
-				System.out.println("No hay grupos para mostrar.");
-				return;
-			}
+	    ArrayList<Festival> listaFestivales = new ArrayList<>();
 
-			// Pasamos a ArrayList
-			ArrayList<Festival> festivales = new ArrayList<>();
-			for (Festival g : gruposArray) {
-				festivales.add(g);
-			}
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroFestivales));
+	        listaFestivales = (ArrayList<Festival>) ois.readObject();
+	        ois.close();
 
-			Collections.sort(festivales);
+	        if (listaFestivales.isEmpty()) {
+	            System.out.println("No hay festivales para mostrar.");
+	            return;
+	        }
 
+	        // ---------- ORDENAR POR NOMBRE ----------
+	        Collections.sort(listaFestivales);
 
-			System.out.println("LISTADO DE FESTIVALES (ordenados por nombre)");
-			System.out.println("--------------------------------------");
+	        // ---------- MOSTRAR ----------
+	        System.out.println("LISTADO DE FESTIVALES (ordenados por nombre)");
+	        System.out.println("--------------------------------------");
 
-			for (Festival f : festivales) {
-				System.out.println("Código: " + f.getCodFestival());
-				System.out.println("Nombre: " + f.getNombreFestival());
-				System.out.println("----------------");
-			
-			}
+	        for (Festival f : listaFestivales) {
+	            System.out.println("Código: " + f.getCodFestival());
+	            System.out.println("Nombre: " + f.getNombreFestival());
+	            System.out.println("----------------");
+	        }
 
-		} catch (Exception e) {
-			System.out.println("Error al leer el fichero de grupos.");
-			e.printStackTrace();
-		}
+	    } catch (Exception e) {
+	        System.out.println("Error al leer el fichero de festivales.");
+	        e.printStackTrace();
+	    }
 	}
+
 
 	private static void listarGruposPorNombre() {
-		File ficheroGrupos = new File("grupos.obj");
 
-		if (!ficheroGrupos.exists()) {
-			System.out.println("No hay grupos registrados.");
-			return;
-		}
+	    File ficheroGrupos = new File("grupos.obj");
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroGrupos))) {
-			Grupo[] gruposArray = (Grupo[]) ois.readObject();
+	    if (!ficheroGrupos.exists()) {
+	        System.out.println("No hay grupos registrados.");
+	        return;
+	    }
 
-			if (gruposArray.length == 0) {
-				System.out.println("No hay grupos para mostrar.");
-				return;
-			}
+	    ArrayList<Grupo> listaGrupos = new ArrayList<>();
 
-			// Pasamos a ArrayList
-			ArrayList<Grupo> grupos = new ArrayList<>();
-			for (Grupo g : gruposArray) {
-				grupos.add(g);
-			}
+	    try {
+	        // ---------- LEER FICHERO ----------
+	        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroGrupos));
+	        listaGrupos = (ArrayList<Grupo>) ois.readObject();
+	        ois.close();
 
-			Collections.sort(grupos);
+	        if (listaGrupos.isEmpty()) {
+	            System.out.println("No hay grupos para mostrar.");
+	            return;
+	        }
 
+	        // ---------- ORDENAR POR NOMBRE ----------
+	        Collections.sort(listaGrupos);
 
-			System.out.println("LISTADO DE GRUPOS (ordenados por nombre)");
-			System.out.println("--------------------------------------");
+	        // ---------- MOSTRAR ----------
+	        System.out.println("LISTADO DE GRUPOS (ordenados por nombre)");
+	        System.out.println("--------------------------------------");
 
-			for (Grupo g : grupos) {
-				System.out.println("Código: " + g.getCodGrup());
-				System.out.println("Nombre: " + g.getNombGrupo());
-				System.out.println("Personas en el grupo: " + g.getPersonas().size());
-				System.out.println("--------------------------------------");
-			}
+	        for (Grupo g : listaGrupos) {
+	            System.out.println("Código: " + g.getCodGrup());
+	            System.out.println("Nombre: " + g.getNombGrupo());
+	            System.out.println("Personas en el grupo: " + g.getPersonas().size());
+	            System.out.println("--------------------------------------");
+	        }
 
-		} catch (Exception e) {
-			System.out.println("Error al leer el fichero de grupos.");
-			e.printStackTrace();
-		}
+	    } catch (Exception e) {
+	        System.out.println("Error al leer el fichero de grupos.");
+	        e.printStackTrace();
+	    }
 	}
+
 
 	private static void menuAnadir() {
 		int opc;
@@ -580,35 +644,36 @@ public class MainReto {
 	    }
 
 	    try {
-	        // Leer festivales
+	        // ---------- LEER FESTIVALES ----------
 	        ObjectInputStream oisFest = new ObjectInputStream(new FileInputStream(ficheroFest));
-	        Festival[] festivales = (Festival[]) oisFest.readObject();
+	        ArrayList<Festival> listaFestivales = (ArrayList<Festival>) oisFest.readObject();
 	        oisFest.close();
 
-	        if (festivales.length == 0) {
+	        if (listaFestivales.isEmpty()) {
 	            System.out.println("No hay festivales disponibles.");
 	            return;
 	        }
 
-	        // Mostrar festivales
+	        // ---------- MOSTRAR FESTIVALES ----------
 	        System.out.println("Festivales disponibles:");
-	        for (int i = 0; i < festivales.length; i++) {
-	            System.out.println((i + 1) + ". " + festivales[i].getNombreFestival());
+	        for (int i = 0; i < listaFestivales.size(); i++) {
+	            System.out.println((i + 1) + ". " + listaFestivales.get(i).getNombreFestival());
 	        }
 
-	        int posFestival = Utilidades.leerInt(1, festivales.length) - 1;
-	        Festival festival = festivales[posFestival];
+	        int posFestival = Utilidades.leerInt(1, listaFestivales.size()) - 1;
+	        Festival festival = listaFestivales.get(posFestival);
 
-	        // Leer grupos
+	        // ---------- LEER GRUPOS ----------
 	        ObjectInputStream oisGrupos = new ObjectInputStream(new FileInputStream(ficheroGrupos));
-	        Grupo[] grupos = (Grupo[]) oisGrupos.readObject();
+	        ArrayList<Grupo> listaGrupos = (ArrayList<Grupo>) oisGrupos.readObject();
 	        oisGrupos.close();
 
-	        if (grupos.length < 2) {
+	        if (listaGrupos.size() < 2) {
 	            System.out.println("Se necesitan al menos 2 grupos.");
 	            return;
 	        }
 
+	        // ---------- AÑADIR CONCIERTOS ----------
 	        char seguir;
 	        do {
 	            System.out.println("Fecha del concierto (dd/MM/yyyy):");
@@ -620,32 +685,31 @@ public class MainReto {
 	            }
 
 	            System.out.println("Grupos disponibles:");
-	            for (int i = 0; i < grupos.length; i++) {
-	                System.out.println((i + 1) + ". " + grupos[i].getNombGrupo());
+	            for (int i = 0; i < listaGrupos.size(); i++) {
+	                System.out.println((i + 1) + ". " + listaGrupos.get(i).getNombGrupo());
 	            }
 
 	            System.out.println("Selecciona el GRUPO PRINCIPAL:");
-	            int gPrincipal = Utilidades.leerInt(1, grupos.length) - 1;
+	            int gPrincipal = Utilidades.leerInt(1, listaGrupos.size()) - 1;
 
 	            int gInvitado;
 	            do {
 	                System.out.println("Selecciona el GRUPO INVITADO:");
-	                gInvitado = Utilidades.leerInt(1, grupos.length) - 1;
+	                gInvitado = Utilidades.leerInt(1, listaGrupos.size()) - 1;
 	            } while (gPrincipal == gInvitado);
 
-	            String nombreGrupo = grupos[gPrincipal].getNombGrupo().toUpperCase();
+	            String nombreGrupo = listaGrupos.get(gPrincipal).getNombGrupo().toUpperCase();
 	            String siglas = nombreGrupo.length() >= 3 
 	                    ? nombreGrupo.substring(0, 3)
 	                    : nombreGrupo;
 
 	            String codConcierto = fecha.toString().replace("-", "") + siglas;
 
-
 	            Concierto nuevo = new Concierto(
 	                    codConcierto,
 	                    fecha,
-	                    grupos[gPrincipal],
-	                    grupos[gInvitado]
+	                    listaGrupos.get(gPrincipal),
+	                    listaGrupos.get(gInvitado)
 	            );
 
 	            festival.getConciertos().put(fecha, nuevo);
@@ -655,9 +719,9 @@ public class MainReto {
 
 	        } while (seguir == 'S' || seguir == 's');
 
-	        // Guardar festivales actualizados
+	        // ---------- GUARDAR FESTIVALES ACTUALIZADOS ----------
 	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ficheroFest));
-	        oos.writeObject(festivales);
+	        oos.writeObject(listaFestivales);
 	        oos.close();
 
 	    } catch (Exception e) {
@@ -667,112 +731,115 @@ public class MainReto {
 	}
 
 
-		private static void anadirFestival() {
-			try {
-				ArrayList<Festival> listaFestivales = new ArrayList<>();
-				File ficheroFest = new File("festival.obj");
+	private static void anadirFestival() {
+	    try {
+	        // ---------- LEER FESTIVALES ----------
+	        ArrayList<Festival> listaFestivales = new ArrayList<>();
+	        File ficheroFest = new File("festival.obj");
 
-				if (ficheroFest.exists()) {
-					ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroFest));
-					Festival[] festivales = (Festival[]) ois.readObject();
-					ois.close();
+	        if (ficheroFest.exists()) {
+	            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheroFest));
+	            listaFestivales = (ArrayList<Festival>) ois.readObject();
+	            ois.close();
+	        }
 
-					for (Festival f : festivales) {
-						listaFestivales.add(f);
-					}
-				}
+	        // ---------- LEER GRUPOS ----------
+	        File ficheroGrupos = new File("grupos.obj");
+	        if (!ficheroGrupos.exists()) {
+	            System.out.println("No hay grupos registrados.");
+	            return;
+	        }
 
-				File ficheroGrupos = new File("grupos.obj");
-				if (!ficheroGrupos.exists()) {
-					System.out.println("No hay grupos registrados.");
-					return;
-				}
+	        ObjectInputStream oisGrupos = new ObjectInputStream(new FileInputStream(ficheroGrupos));
+	        ArrayList<Grupo> listaGrupos = (ArrayList<Grupo>) oisGrupos.readObject();
+	        oisGrupos.close();
 
-				ObjectInputStream oisGrupos = new ObjectInputStream(new FileInputStream(ficheroGrupos));
-				Grupo[] grupos = (Grupo[]) oisGrupos.readObject();
-				oisGrupos.close();
+	        if (listaGrupos.size() < 2) {
+	            System.out.println("Se necesitan al menos 2 grupos para crear un concierto.");
+	            return;
+	        }
 
-				if (grupos.length < 2) {
-					System.out.println("Se necesitan al menos 2 grupos para crear un concierto.");
-					return;
+	        // ---------- DATOS DEL FESTIVAL ----------
+	        String nombreFestival = Utilidades.introducirCadena("Nombre del festival:");
+	        String codFestival = nombreFestival.substring(0, 3).toUpperCase()
+	                + String.format("%02d", listaFestivales.size() + 1);
 
-				}
-				
-				String nombreFestival = Utilidades.introducirCadena("Nombre del festival:");
-				String codFestival = nombreFestival.substring(0, 3).toUpperCase()
-				        + String.format("%02d", listaFestivales.size() + 1);
+	        TreeMap<LocalDate, Concierto> conciertos = new TreeMap<>();
+	        char seguir = 0;
 
+	        // ---------- AÑADIR CONCIERTOS ----------
+	        do {
+	            System.out.println("Fecha del concierto (dd/MM/yyyy):");
+	            LocalDate fecha = Utilidades.leerFechaDMA();
 
-				TreeMap<LocalDate, Concierto> conciertos = new TreeMap<>();
-				char seguir;
-				do {
-					System.out.println("Fecha del concierto (dd/MM/yyyy):");
-					LocalDate fecha = Utilidades.leerFechaDMA();
-					System.out.println("Grupos disponibles:");
-					for (int i = 0; i < grupos.length; i++) {
+	            if (conciertos.containsKey(fecha)) {
+	                System.out.println("Error: ya existe un concierto en esa fecha.");
+	                continue;
+	            }
 
-						System.out.println((i + 1) + ". " + grupos[i].getNombGrupo());
+	            System.out.println("Grupos disponibles:");
+	            for (int i = 0; i < listaGrupos.size(); i++) {
+	                System.out.println((i + 1) + ". " + listaGrupos.get(i).getNombGrupo());
+	            }
 
-					}
+	            System.out.println("Selecciona grupo 1:");
+	            int g1 = Utilidades.leerInt(1, listaGrupos.size()) - 1;
+	            int g2;
 
-					System.out.println("Selecciona grupo 1:");
-					int g1 = Utilidades.leerInt(1, grupos.length) - 1;
-					int g2;
+	            do {
+	                System.out.println("Selecciona grupo 2 (distinto del primero):");
+	                g2 = Utilidades.leerInt(1, listaGrupos.size()) - 1;
+	            } while (g1 == g2);
 
-					do {
-						System.out.println("Selecciona grupo 2 (distinto del primero):");
-						g2 = Utilidades.leerInt(1, grupos.length) - 1;
-					} while (g1 == g2);
+	            String codConcierto = fecha.toString().replace("-", "")
+	                    + listaGrupos.get(g1).getNombGrupo().substring(0, 3).toUpperCase();
 
-					String codConcierto = fecha.toString().replace("-", "") +
-							grupos[g1].getNombGrupo().substring(0, 3).toUpperCase();
+	            Concierto c = new Concierto(codConcierto, fecha,
+	                    listaGrupos.get(g1), listaGrupos.get(g2));
 
-					Concierto c = new Concierto(codConcierto, fecha, grupos[g1], grupos[g2]);
-					if (conciertos.containsKey(fecha)) {
-					    System.out.println("Error: ya existe un concierto en esa fecha.");
-					} else {
-					    conciertos.put(fecha, c);
-					}
+	            conciertos.put(fecha, c);
 
-					seguir = Utilidades.leerChar("¿Añadir otro concierto? (S/N)");
-				} while (seguir == 'S' || seguir == 's');
-				Festival nuevoFestival = new Festival(nombreFestival, codFestival, conciertos);
-				listaFestivales.add(nuevoFestival);
+	            seguir = Utilidades.leerChar("¿Añadir otro concierto? (S/N)");
 
-				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("festival.obj"));
-				oos.writeObject(listaFestivales.toArray(new Festival[0]));
-				oos.close();
+	        } while (seguir == 'S' || seguir == 's');
 
-				System.out.println("Festival añadido correctamente.");
-			} catch (Exception e) {
-				System.out.println("Error al añadir el festival.");
-				e.printStackTrace();
+	        // ---------- CREAR Y AÑADIR FESTIVAL ----------
+	        Festival nuevoFestival = new Festival(nombreFestival, codFestival, conciertos);
+	        listaFestivales.add(nuevoFestival);
 
-			}
+	        // ---------- GUARDAR FESTIVALES ----------
+	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ficheroFest));
+	        oos.writeObject(listaFestivales); // <-- NO se convierte a array
+	        oos.close();
+
+	        System.out.println("Festival añadido correctamente.");
+
+	    } catch (Exception e) {
+	        System.out.println("Error al añadir el festival.");
+	        e.printStackTrace();
+	    }
 	}
 
 	private static void anadirGrupo() {
 	    try {
-
+	        // ---------- LEER GRUPOS EXISTENTES ----------
 	        ArrayList<Grupo> listaGrupos = new ArrayList<>();
 	        File fichero = new File("grupos.obj");
 
 	        if (fichero.exists()) {
 	            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fichero));
-	            Grupo[] grupos = (Grupo[]) ois.readObject();
+	            listaGrupos = (ArrayList<Grupo>) ois.readObject();
 	            ois.close();
-
-	            for (Grupo g : grupos) {
-	                listaGrupos.add(g);
-	            }
 	        }
 
+	        // ---------- DATOS DEL NUEVO GRUPO ----------
 	        String nombreGrupo = Utilidades.introducirCadena("Introduce el nombre del grupo:");
 	        String codGrupo = String.format("G%02d", listaGrupos.size() + 1);
 
 	        HashMap<String, Persona> personas = new HashMap<>();
 	        char seguir;
 
+	        // ---------- AÑADIR PERSONAS ----------
 	        do {
 	            boolean dniValido = false;
 	            boolean emailValido = false;
@@ -784,6 +851,7 @@ public class MainReto {
 	            String nombre = Utilidades.introducirCadena("Nombre:");
 	            String apellido = Utilidades.introducirCadena("Apellido:");
 
+	            // Validar DNI
 	            String dni = "";
 	            do {
 	                dni = Utilidades.introducirCadena("DNI:");
@@ -795,6 +863,7 @@ public class MainReto {
 	                }
 	            } while (!dniValido);
 
+	            // Validar Email
 	            String email = "";
 	            do {
 	                email = Utilidades.introducirCadena("Email:");
@@ -807,14 +876,14 @@ public class MainReto {
 	            } while (!emailValido);
 
 	            if (opcion == 1) {
-
-	            	int numCantantes = 0;
-	            	for (Persona p : personas.values()) {
-	            	    if (p instanceof Cantante) {
-	            	        numCantantes++;
-	            	    }
-	            	}
-	            	String codCant = String.format("C%02d", numCantantes + 1);
+	                // ---------- AÑADIR CANTANTE ----------
+	                int numCantantes = 0;
+	                for (Persona p : personas.values()) {
+	                    if (p instanceof Cantante) {
+	                        numCantantes++;
+	                    }
+	                }
+	                String codCant = String.format("C%02d", numCantantes + 1);
 
 	                Genero genero = null;
 	                boolean generoValido = false;
@@ -833,12 +902,13 @@ public class MainReto {
 	                personas.put(dni, c);
 
 	            } else {
+	                // ---------- AÑADIR STAFF ----------
 	                Tipo tipo = null;
 	                boolean tipoValido = false;
 
 	                do {
 	                    try {
-	                        String tipoStr = Utilidades.introducirCadena( "Tipo (MANAGER / TECNICO / MEDICO):");
+	                        String tipoStr = Utilidades.introducirCadena("Tipo (MANAGER / TECNICO / MEDICO):");
 	                        tipo = Tipo.valueOf(tipoStr.toUpperCase());
 	                        tipoValido = true;
 	                    } catch (IllegalArgumentException e) {
@@ -850,12 +920,10 @@ public class MainReto {
 	                do {
 	                    System.out.println("Fecha inicio (dd/MM/yyyy):");
 	                    fecha = Utilidades.leerFechaDMA();
-
 	                    if (fecha.isAfter(LocalDate.now())) {
 	                        System.out.println("Error: la fecha no puede ser futura.");
 	                    }
 	                } while (fecha.isAfter(LocalDate.now()));
-
 
 	                Staff s = new Staff(nombre, apellido, dni, email, tipo, fecha);
 	                personas.put(dni, s);
@@ -865,11 +933,13 @@ public class MainReto {
 
 	        } while (seguir == 'S' || seguir == 's');
 
+	        // ---------- CREAR Y AÑADIR GRUPO ----------
 	        Grupo nuevoGrupo = new Grupo(codGrupo, nombreGrupo, personas);
 	        listaGrupos.add(nuevoGrupo);
 
-	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("grupos.obj"));
-	        oos.writeObject(listaGrupos.toArray(new Grupo[0]));
+	        // ---------- GUARDAR GRUPOS ----------
+	        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fichero));
+	        oos.writeObject(listaGrupos); // <-- NO se convierte a array
 	        oos.close();
 
 	        System.out.println("Grupo añadido correctamente.");
@@ -915,51 +985,58 @@ public class MainReto {
 	}
 
 	public static void precargarDatos() {
-		try {
-			// ------------------- GRUPOS -------------------
-			HashMap<String, Persona> personas1 = new HashMap<>();
-			personas1.put("12345678A", new Cantante("Juan", "Pérez", "12345678A", "juan@mail.com", "C01", Genero.POP));
-			personas1.put("87654321B", new Cantante("Ana", "García", "87654321B", "ana@mail.com", "C02", Genero.ROCK));
-			personas1.put("11111111C", new Staff("Carlos", "Lopez", "11111111C", "carlos@mail.com", Tipo.MANAGER,
-					LocalDate.of(2020, 5, 1)));
-			personas1.put("22222222D", new Staff("Marta", "Santos", "22222222D", "marta@mail.com", Tipo.TECNICO,
-					LocalDate.of(2021, 3, 15)));
+	    try {
+	        // ------------------- GRUPOS -------------------
+	        HashMap<String, Persona> personas1 = new HashMap<>();
+	        personas1.put("12345678A", new Cantante("Juan", "Pérez", "12345678A", "juan@mail.com", "C01", Genero.POP));
+	        personas1.put("87654321B", new Cantante("Ana", "García", "87654321B", "ana@mail.com", "C02", Genero.ROCK));
+	        personas1.put("11111111C", new Staff("Carlos", "Lopez", "11111111C", "carlos@mail.com", Tipo.MANAGER,
+	                LocalDate.of(2020, 5, 1)));
+	        personas1.put("22222222D", new Staff("Marta", "Santos", "22222222D", "marta@mail.com", Tipo.TECNICO,
+	                LocalDate.of(2021, 3, 15)));
 
-			Grupo grupo1 = new Grupo("G01", "The Rockers", personas1);
+	        Grupo grupo1 = new Grupo("G01", "The Rockers", personas1);
 
-			HashMap<String, Persona> personas2 = new HashMap<>();
-			personas2.put("33333333E",
-					new Cantante("Luis", "Martínez", "33333333E", "luis@mail.com", "C03", Genero.REGGAETON));
-			personas2.put("44444444F", new Cantante("Sara", "Torres", "44444444F", "sara@mail.com", "C04", Genero.POP));
-			personas2.put("55555555G",
-					new Staff("Pedro", "Vega", "55555555G", "pedro@mail.com", Tipo.MEDICO, LocalDate.of(2022, 1, 20)));
+	        HashMap<String, Persona> personas2 = new HashMap<>();
+	        personas2.put("33333333E", new Cantante("Luis", "Martínez", "33333333E", "luis@mail.com", "C03", Genero.REGGAETON));
+	        personas2.put("44444444F", new Cantante("Sara", "Torres", "44444444F", "sara@mail.com", "C04", Genero.POP));
+	        personas2.put("55555555G", new Staff("Pedro", "Vega", "55555555G", "pedro@mail.com", Tipo.MEDICO,
+	                LocalDate.of(2022, 1, 20)));
 
-			Grupo grupo2 = new Grupo("G02", "Reaggaeton Stars", personas2);
+	        Grupo grupo2 = new Grupo("G02", "Reaggaeton Stars", personas2);
 
-			// Guardar grupos en "grupos.obj"
-			Grupo[] listaGrupos = { grupo1, grupo2 };
-			ObjectOutputStream oosGrupos = new ObjectOutputStream(new FileOutputStream("grupos.obj"));
-			oosGrupos.writeObject(listaGrupos);
-			oosGrupos.close();
+	        // Guardar grupos en ArrayList
+	        ArrayList<Grupo> listaGrupos = new ArrayList<>();
+	        listaGrupos.add(grupo1);
+	        listaGrupos.add(grupo2);
 
-			// ------------------- FESTIVALES -------------------
-			TreeMap<LocalDate, Concierto> conciertos1 = new TreeMap<>();
-			conciertos1.put(LocalDate.of(2026, 6, 10),
-					new Concierto("20260610THE", LocalDate.of(2024, 6, 10), grupo1, grupo2));
-			Festival festival1 = new Festival("SummerFest", "SUM01", conciertos1);
+	        ObjectOutputStream oosGrupos = new ObjectOutputStream(new FileOutputStream("grupos.obj"));
+	        oosGrupos.writeObject(listaGrupos); // <-- ArrayList ahora
+	        oosGrupos.close();
 
-			TreeMap<LocalDate, Concierto> conciertos2 = new TreeMap<>();
-			conciertos2.put(LocalDate.of(2026, 7, 5),
-					new Concierto("20260705REG", LocalDate.of(2024, 7, 5), grupo2, grupo1));
-			Festival festival2 = new Festival("MusicDays", "MUS01", conciertos2);
+	        // ------------------- FESTIVALES -------------------
+	        TreeMap<LocalDate, Concierto> conciertos1 = new TreeMap<>();
+	        conciertos1.put(LocalDate.of(2026, 6, 10),
+	                new Concierto("20260610THE", LocalDate.of(2024, 6, 10), grupo1, grupo2));
+	        Festival festival1 = new Festival("SummerFest", "SUM01", conciertos1);
 
-			Festival[] listaFestivales = { festival1, festival2 };
-			ObjectOutputStream oosFest = new ObjectOutputStream(new FileOutputStream("festival.obj"));
-			oosFest.writeObject(listaFestivales);
-			oosFest.close();
+	        TreeMap<LocalDate, Concierto> conciertos2 = new TreeMap<>();
+	        conciertos2.put(LocalDate.of(2026, 7, 5),
+	                new Concierto("20260705REG", LocalDate.of(2024, 7, 5), grupo2, grupo1));
+	        Festival festival2 = new Festival("MusicDays", "MUS01", conciertos2);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	        // Guardar festivales en ArrayList
+	        ArrayList<Festival> listaFestivales = new ArrayList<>();
+	        listaFestivales.add(festival1);
+	        listaFestivales.add(festival2);
+
+	        ObjectOutputStream oosFest = new ObjectOutputStream(new FileOutputStream("festival.obj"));
+	        oosFest.writeObject(listaFestivales); // <-- ArrayList también
+	        oosFest.close();
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
+
 }
